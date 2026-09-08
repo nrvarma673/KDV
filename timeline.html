@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Timeline — Krishna's Life Journey</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="nav-bar">
+    <div class="brand"><span class="badge">KDV</span> Krishna's Life Journey</div>
+    <nav class="main-nav">
+      <a href="index.html">Home</a>
+      <a href="timeline.html" class="active">Timeline</a>
+    </nav>
+    <div id="nav-auth-area"></div>
+  </div>
+</header>
+
+<section>
+  <div class="container">
+    <h2>Year-by-Year Timeline</h2>
+    <p class="section-sub">A private family album, growing one year at a time.</p>
+    <div id="timeline-root"></div>
+  </div>
+</section>
+
+<footer class="site-footer">
+  <div class="container">
+    &copy; <span id="footer-year"></span> Krishna's Life Journey — a private family project.
+  </div>
+</footer>
+
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-storage-compat.js"></script>
+<script src="js/firebase-config.js"></script>
+<script src="js/auth.js"></script>
+<script>document.getElementById("footer-year").textContent = new Date().getFullYear();</script>
+<script src="js/timeline.js"></script>
+</body>
+</html>
