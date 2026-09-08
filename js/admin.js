@@ -64,6 +64,41 @@ function initPasswordGate(user, onDone) {
   });
 }
 
+/* ---------------- Change password (always available) ---------------- */
+
+function initAdminChangePasswordForm(user) {
+  const form = document.getElementById("admin-change-password-form");
+  const msg = document.getElementById("admin-change-password-msg");
+
+  form.addEventListener("submit", (e) => {
+    e.preventDefault();
+    const pw1 = document.getElementById("admin-new-password").value;
+    const pw2 = document.getElementById("admin-confirm-password").value;
+
+    if (pw1.length < 8) {
+      showMsg(msg, "Password must be at least 8 characters.", "error");
+      return;
+    }
+    if (pw1 !== pw2) {
+      showMsg(msg, "Passwords do not match.", "error");
+      return;
+    }
+
+    user.updatePassword(pw1)
+      .then(() => {
+        showMsg(msg, "Password updated successfully.", "success");
+        form.reset();
+      })
+      .catch((err) => {
+        if (err.code === "auth/requires-recent-login") {
+          showMsg(msg, "For security, please log out and log back in, then try again immediately.", "error");
+        } else {
+          showMsg(msg, "Could not update password: " + err.message, "error");
+        }
+      });
+  });
+}
+
 /* ---------------- Default data seeding ---------------- */
 
 const DEFAULT_YEARS = [
@@ -279,6 +314,7 @@ document.addEventListener("DOMContentLoaded", () => {
   initAuthNav();
   requireAuth((user) => {
     document.getElementById("admin-email").textContent = user.email;
+    initAdminChangePasswordForm(user);
     initPasswordGate(user, () => {
       initSeedButton();
       initAddYearForm();

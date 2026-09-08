@@ -52,6 +52,23 @@
       <div id="seed-msg" class="form-msg" style="display:none;"></div>
     </section>
 
+    <section class="admin-section card" style="max-width:420px;">
+      <h3 style="margin-top:0;">Change Password</h3>
+      <p class="hint" style="margin-top:0;">Available any time — use this now if you're still on a temporary password.</p>
+      <form id="admin-change-password-form">
+        <div class="form-group">
+          <label for="admin-new-password">New password (min. 8 characters)</label>
+          <input type="password" id="admin-new-password" required minlength="8" autocomplete="new-password">
+        </div>
+        <div class="form-group">
+          <label for="admin-confirm-password">Confirm new password</label>
+          <input type="password" id="admin-confirm-password" required minlength="8" autocomplete="new-password">
+        </div>
+        <button type="submit" class="btn btn-primary btn-sm">Update Password</button>
+        <div id="admin-change-password-msg" class="form-msg" style="display:none;"></div>
+      </form>
+    </section>
+
     <section class="admin-section">
       <h3>1. Site Setup</h3>
       <p class="section-sub">Run once, the first time you set up the site.</p>
