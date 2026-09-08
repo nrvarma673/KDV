@@ -4,6 +4,12 @@
    managing timeline years, uploading photos, managing achievements.
    ========================================================================== */
 
+function escapeHtml(str) {
+  const div = document.createElement("div");
+  div.textContent = str == null ? "" : String(str);
+  return div.innerHTML;
+}
+
 function showMsg(el, text, type) {
   el.textContent = text;
   el.className = "form-msg " + type;
