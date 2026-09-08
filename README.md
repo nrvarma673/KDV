@@ -209,15 +209,84 @@ not list it; `.gitignore` already excludes it).
 ## 3. Day-to-day use for the family
 
 - **Adding photos:** log in → Admin → "Upload a Photo" → pick year, file,
-  optional caption → Upload. No GitHub or coding needed for this.
+  optional caption, and a frame style (fill the square, or show the full
+  photo) → Upload. No GitHub or coding needed for this.
+- **Editing a caption, changing a photo's frame, or deleting a photo:**
+  Admin → "Manage Photos" — every uploaded photo, grouped by year, with
+  inline Save/Delete.
 - **Adding/renaming a year:** Admin → "Manage Timeline Years".
 - **Adding an achievement:** Admin → "Manage Achievements" (shows on the
   public Home page).
-- **Removing a photo:** currently done via the Firebase Console (Storage +
-  Firestore) rather than the site UI — let me know if you'd like a
-  "delete photo" button added to the Admin panel as a follow-up.
+- **Changing your own password any time:** click **"My Account"** in the
+  top navigation (available to anyone logged in, viewer or admin).
 - **Forgot password:** the Login page has a "Forgot password?" link, which
-  emails a reset link via Firebase to the admin email.
+  emails a reset link via Firebase to that account's email.
+
+---
+
+## 3a. Giving other people access (viewers vs. admins)
+
+The site has two kinds of logged-in accounts:
+
+- **Viewers** can log in and see the full private Timeline (and Home page),
+  but cannot upload, edit, or delete anything.
+- **Admins** (currently just `nrvarma.673@gmail.com`) can do everything
+  viewers can, plus upload/edit/delete photos, years, and achievements.
+
+This is enforced by the security rules themselves (`rules/firestore.rules`,
+`rules/storage.rules`), via a Firestore collection called `admins` — an
+account is an admin if, and only if, a document exists there named exactly
+by their Firebase Auth **uid**. Only you can create or remove that
+document, directly in the Firebase Console — there is no button on the
+website for it, by design, so it can never be changed by a website bug or
+a viewer account.
+
+### Add a new viewer (view-only)
+
+1. Firebase Console → **Authentication** → **Users** → **Add user**.
+2. Enter their email and a temporary password you choose (make one up —
+   they'll change it themselves in a moment).
+3. Give them the site URL, their email, and that temporary password, and
+   tell them to log in, then click **"My Account"** in the navigation to
+   set their own password immediately.
+
+That's it — no rules changes needed for a plain viewer; they simply won't
+see an "Admin" link, and any attempt to upload would be rejected by the
+security rules even if they tried.
+
+### Promote someone to admin
+
+1. Make sure they already have a login (create one as above if not).
+2. Firebase Console → **Authentication** → **Users** → find their row →
+   copy their **User UID**.
+3. Firebase Console → **Firestore Database** → **Data** tab → find (or
+   create) the **`admins`** collection → **Add document** → set the
+   **Document ID** field to the UID you copied (paste it in exactly,
+   overriding the "Auto-ID" default) → add any one field, e.g. a string
+   field named `email` with their email address (its value isn't checked
+   by the rules — the document's existence is what matters) → **Save**.
+4. They may need to log out and back in (or just refresh) to see the
+   "Admin" link appear.
+
+### Remove someone's access entirely
+
+Firebase Console → **Authentication** → **Users** → find their row → the
+"⋮" menu → **Delete account**. If they were also an admin, also delete
+their document from the `admins` collection in Firestore.
+
+### One-time setup step for the rules update above
+
+Because the security rules changed to add this viewer/admin distinction,
+**you must do this once, right after publishing the updated
+`rules/firestore.rules`**, or you'll lock yourself out of Admin:
+
+1. Firebase Console → **Authentication** → **Users** → find your own row
+   (`nrvarma.673@gmail.com`) → copy your **User UID**.
+2. Add yourself to the `admins` collection using that UID, exactly as
+   described under "Promote someone to admin" above.
+
+Do this *before* or immediately after re-publishing the rules — until that
+document exists, even your own account will be treated as a viewer.
 
 ---
 
