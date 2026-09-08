@@ -248,6 +248,27 @@ section .section-sub { color: var(--color-muted); margin-top: 0; margin-bottom: 
 .progress-bar-outer { width: 100%; background: #eee; border-radius: 999px; height: 8px; overflow: hidden; margin-top: 8px; }
 .progress-bar-inner { height: 100%; background: var(--color-primary); width: 0%; transition: width .2s ease; }
 
+/* ---------- Manage Photos (admin) ---------- */
+.photo-manage-group { margin-bottom: 22px; }
+.photo-manage-group h4 { margin: 0 0 10px; font-size: 1rem; }
+.photo-manage-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--color-border);
+  flex-wrap: wrap;
+}
+.photo-manage-row:last-child { border-bottom: none; }
+.photo-manage-thumb {
+  width: 64px; height: 64px; border-radius: 8px; overflow: hidden;
+  background: #f3f4f6; border: 1px solid var(--color-border); flex-shrink: 0;
+}
+.photo-manage-thumb img { width: 100%; height: 100%; object-fit: cover; }
+.photo-manage-fields { display: flex; gap: 10px; flex-wrap: wrap; flex: 1; min-width: 240px; align-items: center; }
+.photo-manage-fields input[type="text"] { min-width: 180px; padding: 7px 10px; border-radius: 8px; border: 1px solid var(--color-border); font-size: .85rem; }
+.photo-manage-fields select { padding: 7px 10px; border-radius: 8px; border: 1px solid var(--color-border); font-size: .85rem; }
+
 /* ---------- Footer ---------- */
 footer.site-footer {
   border-top: 1px solid var(--color-border);

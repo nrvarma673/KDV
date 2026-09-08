@@ -193,7 +193,10 @@ function deleteYear(yearId) {
     photosSnap.forEach((p) => batch.delete(p.ref));
     batch.delete(db.collection("years").doc(yearId));
     return batch.commit();
-  }).then(loadYears);
+  }).then(() => {
+    loadYears();
+    loadManagePhotos();
+  });
 }
 
 function initAddYearForm() {
@@ -226,6 +229,7 @@ function initUploadForm() {
     const yearId = document.getElementById("upload-year-select").value;
     const file = document.getElementById("upload-file-input").files[0];
     const caption = document.getElementById("upload-caption").value.trim();
+    const fit = document.getElementById("upload-fit").value;
 
     if (!yearId) { showMsg(msg, "Please add a year first.", "error"); return; }
     if (!file) { showMsg(msg, "Please choose a photo file.", "error"); return; }
@@ -251,6 +255,7 @@ function initUploadForm() {
             url,
             path,
             caption,
+            fit,
             uploadedAt: firebase.firestore.FieldValue.serverTimestamp(),
           });
         }).then(() => {
@@ -258,9 +263,99 @@ function initUploadForm() {
           form.reset();
           progressOuter.style.display = "none";
           progressInner.style.width = "0%";
+          loadManagePhotos();
         });
       }
     );
+  });
+}
+
+/* ---------------- Manage photos (edit caption/frame, delete) ---------------- */
+
+function loadManagePhotos() {
+  const container = document.getElementById("manage-photos-list");
+  container.innerHTML = `<p class="empty-state">Loading…</p>`;
+
+  db.collection("years").orderBy("order", "asc").get().then((yearsSnap) => {
+    if (yearsSnap.empty) {
+      container.innerHTML = `<p class="empty-state">No years yet — add one above first.</p>`;
+      return;
+    }
+    container.innerHTML = "";
+
+    const groupPromises = [];
+    yearsSnap.forEach((yearDoc) => {
+      const year = yearDoc.data();
+      const yearId = yearDoc.id;
+
+      const p = db.collection("years").doc(yearId).collection("photos")
+        .orderBy("uploadedAt", "desc").get()
+        .then((photosSnap) => {
+          if (photosSnap.empty) return null;
+
+          const group = document.createElement("div");
+          group.className = "photo-manage-group";
+          group.innerHTML = `<h4>${escapeHtml(year.label)}</h4>`;
+
+          photosSnap.forEach((photoDoc) => {
+            const photo = photoDoc.data();
+            const row = document.createElement("div");
+            row.className = "photo-manage-row";
+            row.innerHTML = `
+              <div class="photo-manage-thumb"><img src="${photo.url}" alt=""></div>
+              <div class="photo-manage-fields">
+                <input type="text" class="pm-caption" value="${escapeHtml(photo.caption || "")}" placeholder="Caption">
+                <select class="pm-fit">
+                  <option value="cover" ${(!photo.fit || photo.fit === "cover") ? "selected" : ""}>Fill frame</option>
+                  <option value="contain" ${photo.fit === "contain" ? "selected" : ""}>Show full photo</option>
+                </select>
+                <button type="button" class="btn btn-outline btn-sm pm-save">Save</button>
+                <button type="button" class="btn btn-danger btn-sm pm-delete">Delete</button>
+              </div>
+            `;
+
+            row.querySelector(".pm-save").addEventListener("click", () => {
+              const newCaption = row.querySelector(".pm-caption").value.trim();
+              const newFit = row.querySelector(".pm-fit").value;
+              db.collection("years").doc(yearId).collection("photos").doc(photoDoc.id)
+                .update({ caption: newCaption, fit: newFit })
+                .then(() => {
+                  const btn = row.querySelector(".pm-save");
+                  const original = btn.textContent;
+                  btn.textContent = "Saved ✓";
+                  setTimeout(() => { btn.textContent = original; }, 1500);
+                });
+            });
+
+            row.querySelector(".pm-delete").addEventListener("click", () => {
+              if (!confirm("Delete this photo permanently?")) return;
+              const deletions = [
+                db.collection("years").doc(yearId).collection("photos").doc(photoDoc.id).delete(),
+              ];
+              if (photo.path) {
+                deletions.push(storage.ref().child(photo.path).delete().catch(() => {}));
+              }
+              Promise.all(deletions).then(() => {
+                row.remove();
+              });
+            });
+
+            group.appendChild(row);
+          });
+
+          return group;
+        });
+      groupPromises.push(p);
+    });
+
+    Promise.all(groupPromises).then((groups) => {
+      const realGroups = groups.filter(Boolean);
+      if (realGroups.length === 0) {
+        container.innerHTML = `<p class="empty-state">No photos uploaded yet.</p>`;
+        return;
+      }
+      realGroups.forEach((g) => container.appendChild(g));
+    });
   });
 }
 
@@ -328,6 +423,7 @@ document.addEventListener("DOMContentLoaded", () => {
       initAddAchievementForm();
       loadYears();
       loadAchievements();
+      loadManagePhotos();
     });
   });
 });

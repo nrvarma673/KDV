@@ -69,10 +69,11 @@ function renderTimeline() {
             }
             photoSnap.forEach((pd) => {
               const photo = pd.data();
+              const fitStyle = photo.fit === "contain" ? "contain" : "cover";
               const tile = document.createElement("div");
               tile.className = "photo-tile";
               tile.innerHTML = `
-                <img src="${photo.url}" alt="${escapeHtml(photo.caption || year.label)}" loading="lazy">
+                <img src="${photo.url}" alt="${escapeHtml(photo.caption || year.label)}" loading="lazy" style="object-fit:${fitStyle};">
                 ${photo.caption ? `<div class="photo-caption">${escapeHtml(photo.caption)}</div>` : ""}
               `;
               grid.appendChild(tile);
