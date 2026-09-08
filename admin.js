@@ -409,6 +409,133 @@ function initAddAchievementForm() {
   });
 }
 
+/* ---------------- Manage Users ---------------- */
+
+/**
+ * Creates a brand-new Firebase Auth user WITHOUT signing out the currently
+ * logged-in admin. Firebase's default createUserWithEmailAndPassword()
+ * would normally sign the new user in on the same app instance (kicking
+ * the admin out) — so we spin up a throwaway "secondary" Firebase app
+ * just for this one call, then tear it down immediately.
+ */
+function createUserWithoutSigningOut(email, password) {
+  const secondaryApp = firebase.initializeApp(firebaseConfig, "Secondary-" + Date.now());
+  const secondaryAuth = secondaryApp.auth();
+  return secondaryAuth.createUserWithEmailAndPassword(email, password)
+    .then((cred) => {
+      const uid = cred.user.uid;
+      return secondaryAuth.signOut()
+        .then(() => secondaryApp.delete())
+        .then(() => uid);
+    })
+    .catch((err) => {
+      // Still clean up the secondary app on failure.
+      return secondaryApp.delete().finally(() => { throw err; });
+    });
+}
+
+function initAddUserForm() {
+  const form = document.getElementById("add-user-form");
+  const msg = document.getElementById("add-user-msg");
+
+  form.addEventListener("submit", (e) => {
+    e.preventDefault();
+    const email = document.getElementById("new-user-email").value.trim();
+    const password = document.getElementById("new-user-password").value;
+    const grantAdmin = document.getElementById("new-user-is-admin").checked;
+
+    if (password.length < 8) {
+      showMsg(msg, "Temporary password must be at least 8 characters.", "error");
+      return;
+    }
+
+    const submitBtn = form.querySelector("button[type=submit]");
+    submitBtn.disabled = true;
+
+    createUserWithoutSigningOut(email, password)
+      .then((uid) => {
+        if (grantAdmin) {
+          return db.collection("admins").doc(uid).set({ email }).then(() => uid);
+        }
+        return uid;
+      })
+      .then(() => {
+        showMsg(msg,
+          `User created: ${email}. Give them this email and temporary password — ` +
+          `tell them to log in, then click "My Account" to set their own password.`,
+          "success");
+        form.reset();
+        loadAdminsList();
+      })
+      .catch((err) => {
+        showMsg(msg, "Could not create user: " + err.message, "error");
+      })
+      .finally(() => { submitBtn.disabled = false; });
+  });
+}
+
+function loadAdminsList() {
+  const listEl = document.getElementById("admins-list");
+  listEl.innerHTML = `<p class="empty-state">Loading…</p>`;
+
+  db.collection("admins").get().then((snap) => {
+    listEl.innerHTML = "";
+    if (snap.empty) {
+      listEl.innerHTML = `<p class="empty-state">No admins listed (unexpected — you're logged in as one).</p>`;
+      return;
+    }
+    const currentUid = auth.currentUser.uid;
+    snap.forEach((doc) => {
+      const data = doc.data();
+      const isSelf = doc.id === currentUid;
+      const row = document.createElement("div");
+      row.className = "year-manage-row";
+      row.innerHTML = `
+        <span>${escapeHtml(data.email || "(no email on file)")} ${isSelf ? "<em>(you)</em>" : ""}
+          <br><span class="hint" style="font-size:.75rem;">${doc.id}</span>
+        </span>
+        <button class="btn btn-danger btn-sm">Remove admin access</button>
+      `;
+      row.querySelector("button").addEventListener("click", () => {
+        const warning = isSelf
+          ? "This will remove YOUR OWN admin access immediately, logging you out of admin features. Continue?"
+          : `Remove admin access for ${data.email || doc.id}? They'll keep their login but become a viewer.`;
+        if (!confirm(warning)) return;
+        db.collection("admins").doc(doc.id).delete().then(() => {
+          if (isSelf) {
+            window.location.href = "timeline.html";
+          } else {
+            loadAdminsList();
+          }
+        });
+      });
+      listEl.appendChild(row);
+    });
+  }).catch((err) => {
+    listEl.innerHTML = `<p class="empty-state">Could not load admins: ${escapeHtml(err.message)}</p>`;
+  });
+}
+
+function initPromoteUserForm() {
+  const form = document.getElementById("promote-user-form");
+  const msg = document.getElementById("promote-msg");
+
+  form.addEventListener("submit", (e) => {
+    e.preventDefault();
+    const uid = document.getElementById("promote-uid").value.trim();
+    const email = document.getElementById("promote-email").value.trim();
+    if (!uid) return;
+
+    db.collection("admins").doc(uid).set({ email: email || null }, { merge: true })
+      .then(() => {
+        showMsg(msg, "Admin access granted for that UID.", "success");
+        form.reset();
+        loadAdminsList();
+      })
+      .catch((err) => showMsg(msg, "Could not grant access: " + err.message, "error"));
+  });
+}
+
 /* ---------------- Boot ---------------- */
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -421,9 +548,12 @@ document.addEventListener("DOMContentLoaded", () => {
       initAddYearForm();
       initUploadForm();
       initAddAchievementForm();
+      initAddUserForm();
+      initPromoteUserForm();
       loadYears();
       loadAchievements();
       loadManagePhotos();
+      loadAdminsList();
     });
   });
 });
