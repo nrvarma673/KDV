@@ -422,10 +422,11 @@ function initAddAchievementForm() {
 /* ---------------- Dashboard tab switching ---------------- */
 
 function initDashboardNav() {
-  const nav = document.getElementById("dashboard-nav");
-  if (!nav) return;
-  const navItems = Array.from(nav.querySelectorAll(".dashboard-nav-item"));
+  const sidebar = document.querySelector(".dashboard-sidebar");
+  if (!sidebar) return;
+  const navItems = Array.from(sidebar.querySelectorAll(".dashboard-nav-item"));
   const panels = Array.from(document.querySelectorAll(".dashboard-panel"));
+  if (!navItems.length) return;
 
   navItems.forEach((btn) => {
     btn.addEventListener("click", () => {
