@@ -130,6 +130,7 @@ function initSeedButton() {
       .then(() => {
         showMsg(msg, "Default Year 1–6 sections are ready. Rename, add, or remove years below.", "success");
         loadYears();
+        loadOverviewStats();
       })
       .catch((err) => showMsg(msg, "Error: " + err.message, "error"))
       .finally(() => { btn.disabled = false; });
@@ -148,6 +149,7 @@ function initSeedButton() {
     }).then(() => {
       showMsg(document.getElementById("seed-msg"), "Example achievement added — edit or delete it below, and add more.", "success");
       loadAchievements();
+      loadOverviewStats();
     }).catch((err) => showMsg(document.getElementById("seed-msg"), "Error: " + err.message, "error"))
       .finally(() => { achBtn.disabled = false; });
   });
@@ -196,6 +198,7 @@ function deleteYear(yearId) {
   }).then(() => {
     loadYears();
     loadManagePhotos();
+    loadOverviewStats();
   });
 }
 
@@ -212,6 +215,7 @@ function initAddYearForm() {
     db.collection("years").doc(id).set({ label, order, caption }).then(() => {
       form.reset();
       loadYears();
+      loadOverviewStats();
     });
   });
 }
@@ -264,6 +268,7 @@ function initUploadForm() {
           progressOuter.style.display = "none";
           progressInner.style.width = "0%";
           loadManagePhotos();
+          loadOverviewStats();
         });
       }
     );
@@ -337,6 +342,7 @@ function loadManagePhotos() {
               }
               Promise.all(deletions).then(() => {
                 row.remove();
+                loadOverviewStats();
               });
             });
 
@@ -380,7 +386,10 @@ function loadAchievements() {
       `;
       row.querySelector("button").addEventListener("click", () => {
         if (confirm("Delete this achievement?")) {
-          db.collection("achievements").doc(doc.id).delete().then(loadAchievements);
+          db.collection("achievements").doc(doc.id).delete().then(() => {
+            loadAchievements();
+            loadOverviewStats();
+          });
         }
       });
       listEl.appendChild(row);
@@ -405,8 +414,54 @@ function initAddAchievementForm() {
     }).then(() => {
       form.reset();
       loadAchievements();
+      loadOverviewStats();
     });
   });
+}
+
+/* ---------------- Dashboard tab switching ---------------- */
+
+function initDashboardNav() {
+  const nav = document.getElementById("dashboard-nav");
+  if (!nav) return;
+  const navItems = Array.from(nav.querySelectorAll(".dashboard-nav-item"));
+  const panels = Array.from(document.querySelectorAll(".dashboard-panel"));
+
+  navItems.forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const targetId = btn.getAttribute("data-panel");
+      navItems.forEach((b) => b.classList.toggle("active", b === btn));
+      panels.forEach((p) => p.classList.toggle("active", p.id === targetId));
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    });
+  });
+}
+
+/* ---------------- Overview stats ---------------- */
+
+function loadOverviewStats() {
+  const statTiles = document.querySelectorAll("#overview-stats .stat-value");
+  if (!statTiles.length) return;
+  const [yearsTile, photosTile, achievementsTile, adminsTile] = statTiles;
+
+  db.collection("years").get().then((yearsSnap) => {
+    yearsTile.textContent = yearsSnap.size;
+
+    const photoCountPromises = yearsSnap.docs.map((yearDoc) =>
+      yearDoc.ref.collection("photos").get().then((photosSnap) => photosSnap.size)
+    );
+    Promise.all(photoCountPromises).then((counts) => {
+      photosTile.textContent = counts.reduce((sum, n) => sum + n, 0);
+    });
+  }).catch(() => { yearsTile.textContent = "—"; });
+
+  db.collection("achievements").get().then((snap) => {
+    achievementsTile.textContent = snap.size;
+  }).catch(() => { achievementsTile.textContent = "—"; });
+
+  db.collection("admins").get().then((snap) => {
+    adminsTile.textContent = snap.size;
+  }).catch(() => { adminsTile.textContent = "—"; });
 }
 
 /* ---------------- Manage Users ---------------- */
@@ -466,6 +521,7 @@ function initAddUserForm() {
           "success");
         form.reset();
         loadAdminsList();
+        loadOverviewStats();
       })
       .catch((err) => {
         showMsg(msg, "Could not create user: " + err.message, "error");
@@ -506,6 +562,7 @@ function loadAdminsList() {
             window.location.href = "timeline.html";
           } else {
             loadAdminsList();
+            loadOverviewStats();
           }
         });
       });
@@ -531,6 +588,7 @@ function initPromoteUserForm() {
         showMsg(msg, "Admin access granted for that UID.", "success");
         form.reset();
         loadAdminsList();
+        loadOverviewStats();
       })
       .catch((err) => showMsg(msg, "Could not grant access: " + err.message, "error"));
   });
@@ -543,6 +601,7 @@ document.addEventListener("DOMContentLoaded", () => {
   requireAdmin((user) => {
     document.getElementById("admin-email").textContent = user.email;
     initAdminChangePasswordForm(user);
+    initDashboardNav();
     initPasswordGate(user, () => {
       initSeedButton();
       initAddYearForm();
@@ -554,6 +613,7 @@ document.addEventListener("DOMContentLoaded", () => {
       loadAchievements();
       loadManagePhotos();
       loadAdminsList();
+      loadOverviewStats();
     });
   });
 });

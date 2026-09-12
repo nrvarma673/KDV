@@ -24,6 +24,9 @@
   <!-- Forced password-change gate: shown only on first login -->
   <div id="password-gate" style="display:none;">
     <div class="card form-card">
+      <div style="width:44px;height:44px;border-radius:12px;background:var(--color-primary-light);color:var(--color-primary);display:flex;align-items:center;justify-content:center;margin-bottom:18px;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width:22px;height:22px;"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>
+      </div>
       <h2 style="margin-top:0;">Set a New Password</h2>
       <p class="hint" style="margin-top:0;">
         You're logged in with a temporary password. For security, please set your own
@@ -46,184 +49,243 @@
 
   <!-- Main admin area -->
   <div id="admin-main" style="display:none;">
-    <section>
-      <h2 style="margin-bottom:2px;">Admin Panel</h2>
-      <p class="hint">Logged in as <strong id="admin-email"></strong></p>
-      <div id="seed-msg" class="form-msg" style="display:none;"></div>
-    </section>
+    <div class="dashboard-shell">
 
-    <section class="admin-section card" style="max-width:420px;">
-      <h3 style="margin-top:0;">Change Password</h3>
-      <p class="hint" style="margin-top:0;">Available any time — use this now if you're still on a temporary password.</p>
-      <form id="admin-change-password-form">
-        <div class="form-group">
-          <label for="admin-new-password">New password (min. 8 characters)</label>
-          <input type="password" id="admin-new-password" required minlength="8" autocomplete="new-password">
-        </div>
-        <div class="form-group">
-          <label for="admin-confirm-password">Confirm new password</label>
-          <input type="password" id="admin-confirm-password" required minlength="8" autocomplete="new-password">
-        </div>
-        <button type="submit" class="btn btn-primary btn-sm">Update Password</button>
-        <div id="admin-change-password-msg" class="form-msg" style="display:none;"></div>
-      </form>
-    </section>
+      <aside class="dashboard-sidebar">
+        <nav class="dashboard-nav" id="dashboard-nav">
+          <button class="dashboard-nav-item active" data-panel="panel-overview" type="button">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="3.5" width="7.5" height="7.5" rx="1.5"/><rect x="13" y="3.5" width="7.5" height="7.5" rx="1.5"/><rect x="3.5" y="13" width="7.5" height="7.5" rx="1.5"/><rect x="13" y="13" width="7.5" height="7.5" rx="1.5"/></svg>
+            Overview
+          </button>
+          <button class="dashboard-nav-item" data-panel="panel-timeline" type="button">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="15" rx="2"/><path d="M8 3v4M16 3v4M3.5 9.5h17"/></svg>
+            Timeline &amp; Photos
+          </button>
+          <button class="dashboard-nav-item" data-panel="panel-achievements" type="button">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 4h8v4a4 4 0 0 1-8 0V4z"/><path d="M8 5H5a3 3 0 0 0 3 4M16 5h3a3 3 0 0 1-3 4"/><path d="M12 12v3M9 20h6M10 15h4v2a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-2z"/></svg>
+            Achievements
+          </button>
+          <button class="dashboard-nav-item" data-panel="panel-users" type="button">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3"/><path d="M3.5 20c0-3 2.5-5.5 5.5-5.5S14.5 17 14.5 20"/><circle cx="17" cy="9" r="2.4"/><path d="M15 20c0-2.4 1.8-4.4 4-4.9"/></svg>
+            Users
+          </button>
+        </nav>
+      </aside>
 
-    <section class="admin-section">
-      <h3>1. Site Setup</h3>
-      <p class="section-sub">Run once, the first time you set up the site.</p>
-      <button id="seed-years-btn" class="btn btn-outline btn-sm">Set up default Year 1–6 sections</button>
-      <button id="seed-achievement-btn" class="btn btn-outline btn-sm">Add example achievement (Asia Book of Records)</button>
-    </section>
+      <main class="dashboard-main">
+        <p class="hint" style="margin-top:0;">Logged in as <strong id="admin-email"></strong></p>
+        <div id="seed-msg" class="form-msg" style="display:none;"></div>
 
-    <div class="admin-grid">
-      <section class="admin-section card">
-        <h3>2. Manage Timeline Years</h3>
-        <div id="years-list"><p class="empty-state">Loading…</p></div>
-        <hr style="margin:18px 0;border:none;border-top:1px solid var(--color-border);">
-        <form id="add-year-form">
-          <div class="form-group">
-            <label for="new-year-label">Year label</label>
-            <input type="text" id="new-year-label" placeholder="e.g. Year 7" required>
+        <!-- ================= OVERVIEW ================= -->
+        <section class="dashboard-panel active" id="panel-overview">
+          <div class="panel-header">
+            <h2>Overview</h2>
+            <p>A quick snapshot of the site, plus one-time setup and your own account.</p>
           </div>
-          <div class="form-group">
-            <label for="new-year-order">Display order (number)</label>
-            <input type="number" id="new-year-order" placeholder="7">
-          </div>
-          <div class="form-group">
-            <label for="new-year-caption">Short caption (optional)</label>
-            <input type="text" id="new-year-caption" placeholder="A one-line memory for this year">
-          </div>
-          <button type="submit" class="btn btn-primary btn-sm">Add Year</button>
-        </form>
-      </section>
 
-      <section class="admin-section card">
-        <h3>3. Upload a Photo</h3>
-        <form id="upload-photo-form">
-          <div class="form-group">
-            <label for="upload-year-select">Year</label>
-            <select id="upload-year-select" required></select>
+          <div class="stat-row" id="overview-stats">
+            <div class="stat-tile"><div class="stat-value">—</div><div class="stat-label">Years</div></div>
+            <div class="stat-tile"><div class="stat-value">—</div><div class="stat-label">Photos</div></div>
+            <div class="stat-tile"><div class="stat-value">—</div><div class="stat-label">Achievements</div></div>
+            <div class="stat-tile"><div class="stat-value">—</div><div class="stat-label">Admins</div></div>
           </div>
-          <div class="form-group">
-            <label for="upload-file-input">Photo file</label>
-            <input type="file" id="upload-file-input" accept="image/*" required>
+
+          <div class="subsection">
+            <h3>One-time Site Setup</h3>
+            <p class="subsection-sub">Run once, the first time you set up the site.</p>
+            <div style="display:flex;gap:10px;flex-wrap:wrap;">
+              <button id="seed-years-btn" class="btn btn-outline btn-sm">Set up default Year 1–6 sections</button>
+              <button id="seed-achievement-btn" class="btn btn-outline btn-sm">Add example achievement (Asia Book of Records)</button>
+            </div>
           </div>
-          <div class="form-group">
-            <label for="upload-caption">Caption (optional)</label>
-            <input type="text" id="upload-caption" placeholder="e.g. First day at school">
+
+          <div class="subsection card" style="max-width:420px;">
+            <h3 style="margin-top:0;">Change Your Password</h3>
+            <p class="subsection-sub">Available any time — use this now if you're still on a temporary password.</p>
+            <form id="admin-change-password-form">
+              <div class="form-group">
+                <label for="admin-new-password">New password (min. 8 characters)</label>
+                <input type="password" id="admin-new-password" required minlength="8" autocomplete="new-password">
+              </div>
+              <div class="form-group">
+                <label for="admin-confirm-password">Confirm new password</label>
+                <input type="password" id="admin-confirm-password" required minlength="8" autocomplete="new-password">
+              </div>
+              <button type="submit" class="btn btn-primary btn-sm">Update Password</button>
+              <div id="admin-change-password-msg" class="form-msg" style="display:none;"></div>
+            </form>
           </div>
-          <div class="form-group">
-            <label for="upload-fit">Photo frame</label>
-            <select id="upload-fit">
-              <option value="cover" selected>Fill the frame (may crop edges)</option>
-              <option value="contain">Show full photo (may add padding)</option>
-            </select>
+        </section>
+
+        <!-- ================= TIMELINE & PHOTOS ================= -->
+        <section class="dashboard-panel" id="panel-timeline">
+          <div class="panel-header">
+            <h2>Timeline &amp; Photos</h2>
+            <p>Manage the year-by-year sections, upload photos, and edit or delete existing ones.</p>
           </div>
-          <button type="submit" class="btn btn-primary btn-sm">Upload Photo</button>
-          <div id="upload-progress-outer" class="progress-bar-outer" style="display:none;">
-            <div id="upload-progress-inner" class="progress-bar-inner"></div>
+
+          <div class="admin-grid">
+            <div class="subsection card">
+              <h3 style="margin-top:0;">Manage Timeline Years</h3>
+              <div id="years-list"><p class="empty-state">Loading…</p></div>
+              <hr class="divider">
+              <form id="add-year-form">
+                <div class="form-group">
+                  <label for="new-year-label">Year label</label>
+                  <input type="text" id="new-year-label" placeholder="e.g. Year 7" required>
+                </div>
+                <div class="form-group">
+                  <label for="new-year-order">Display order (number)</label>
+                  <input type="number" id="new-year-order" placeholder="7">
+                </div>
+                <div class="form-group">
+                  <label for="new-year-caption">Short caption (optional)</label>
+                  <input type="text" id="new-year-caption" placeholder="A one-line memory for this year">
+                </div>
+                <button type="submit" class="btn btn-primary btn-sm">Add Year</button>
+              </form>
+            </div>
+
+            <div class="subsection card">
+              <h3 style="margin-top:0;">Upload a Photo</h3>
+              <form id="upload-photo-form">
+                <div class="form-group">
+                  <label for="upload-year-select">Year</label>
+                  <select id="upload-year-select" required></select>
+                </div>
+                <div class="form-group">
+                  <label for="upload-file-input">Photo file</label>
+                  <input type="file" id="upload-file-input" accept="image/*" required>
+                </div>
+                <div class="form-group">
+                  <label for="upload-caption">Caption (optional)</label>
+                  <input type="text" id="upload-caption" placeholder="e.g. First day at school">
+                </div>
+                <div class="form-group">
+                  <label for="upload-fit">Photo frame</label>
+                  <select id="upload-fit">
+                    <option value="cover" selected>Fill the frame (may crop edges)</option>
+                    <option value="contain">Show full photo (may add padding)</option>
+                  </select>
+                </div>
+                <button type="submit" class="btn btn-primary btn-sm">Upload Photo</button>
+                <div id="upload-progress-outer" class="progress-bar-outer" style="display:none;">
+                  <div id="upload-progress-inner" class="progress-bar-inner"></div>
+                </div>
+                <div id="upload-msg" class="form-msg" style="display:none;"></div>
+              </form>
+            </div>
           </div>
-          <div id="upload-msg" class="form-msg" style="display:none;"></div>
-        </form>
-      </section>
+
+          <div class="subsection card" style="margin-top:24px;">
+            <h3 style="margin-top:0;">Manage Photos</h3>
+            <p class="subsection-sub">Edit caption or frame, or delete — grouped by year, newest first.</p>
+            <div id="manage-photos-list"><p class="empty-state">Loading…</p></div>
+          </div>
+        </section>
+
+        <!-- ================= ACHIEVEMENTS ================= -->
+        <section class="dashboard-panel" id="panel-achievements">
+          <div class="panel-header">
+            <h2>Achievements</h2>
+            <p>Shown on the public Home page.</p>
+          </div>
+
+          <div class="subsection card">
+            <div id="achievements-manage-list"><p class="empty-state">Loading…</p></div>
+            <hr class="divider">
+            <form id="add-achievement-form">
+              <div class="admin-grid">
+                <div class="form-group">
+                  <label for="ach-body">Certifying body</label>
+                  <input type="text" id="ach-body" placeholder="e.g. India Book of Records" required>
+                </div>
+                <div class="form-group">
+                  <label for="ach-title">Title / feat</label>
+                  <input type="text" id="ach-title" placeholder="Record title" required>
+                </div>
+                <div class="form-group">
+                  <label for="ach-date">Date achieved</label>
+                  <input type="text" id="ach-date" placeholder="e.g. 18 September 2023">
+                </div>
+                <div class="form-group">
+                  <label for="ach-age">Age at the time</label>
+                  <input type="text" id="ach-age" placeholder="e.g. 3 years 8 months">
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="ach-description">Description</label>
+                <textarea id="ach-description" rows="3" placeholder="Brief description of the achievement"></textarea>
+              </div>
+              <button type="submit" class="btn btn-primary btn-sm">Add Achievement</button>
+            </form>
+          </div>
+        </section>
+
+        <!-- ================= USERS ================= -->
+        <section class="dashboard-panel" id="panel-users">
+          <div class="panel-header">
+            <h2>Users</h2>
+            <p>
+              Create a login for a family member/friend, grant or revoke admin rights.
+              Fully removing a login (not just admin rights), or seeing every registered
+              login, still needs Firebase Console → Authentication → Users.
+            </p>
+          </div>
+
+          <div class="subsection card">
+            <h3 style="margin-top:0;">Add New User</h3>
+            <form id="add-user-form">
+              <div class="admin-grid">
+                <div class="form-group">
+                  <label for="new-user-email">Email</label>
+                  <input type="email" id="new-user-email" required>
+                </div>
+                <div class="form-group">
+                  <label for="new-user-password">Temporary password (min. 8 characters)</label>
+                  <input type="text" id="new-user-password" required minlength="8"
+                         placeholder="Make one up, e.g. a short phrase">
+                </div>
+              </div>
+              <div class="form-group" style="display:flex;align-items:center;gap:8px;">
+                <input type="checkbox" id="new-user-is-admin" style="width:auto;">
+                <label for="new-user-is-admin" style="margin:0;">Grant admin access immediately</label>
+              </div>
+              <button type="submit" class="btn btn-primary btn-sm">Create User</button>
+              <div id="add-user-msg" class="form-msg" style="display:none;"></div>
+            </form>
+          </div>
+
+          <div class="subsection card">
+            <h3 style="margin-top:0;">Current Admins</h3>
+            <div id="admins-list"><p class="empty-state">Loading…</p></div>
+          </div>
+
+          <div class="subsection card">
+            <h3 style="margin-top:0;">Promote an Existing User to Admin</h3>
+            <p class="subsection-sub">
+              For someone whose login already exists but isn't listed above — find their
+              User UID in Firebase Console → Authentication → Users, then paste it here.
+            </p>
+            <form id="promote-user-form">
+              <div class="admin-grid">
+                <div class="form-group">
+                  <label for="promote-uid">User UID</label>
+                  <input type="text" id="promote-uid" required placeholder="Paste UID from Authentication">
+                </div>
+                <div class="form-group">
+                  <label for="promote-email">Their email (for your reference only)</label>
+                  <input type="email" id="promote-email">
+                </div>
+              </div>
+              <button type="submit" class="btn btn-outline btn-sm">Grant Admin Access</button>
+              <div id="promote-msg" class="form-msg" style="display:none;"></div>
+            </form>
+          </div>
+        </section>
+
+      </main>
     </div>
-
-    <section class="admin-section card" style="margin-top:24px;">
-      <h3>4. Manage Photos (edit caption, frame, or delete)</h3>
-      <p class="hint" style="margin-top:0;">Grouped by year — newest uploads first.</p>
-      <div id="manage-photos-list"><p class="empty-state">Loading…</p></div>
-    </section>
-
-    <section class="admin-section card" style="margin-top:24px;">
-      <h3>5. Manage Achievements (shown on Home page)</h3>
-      <div id="achievements-manage-list"><p class="empty-state">Loading…</p></div>
-      <hr style="margin:18px 0;border:none;border-top:1px solid var(--color-border);">
-      <form id="add-achievement-form">
-        <div class="admin-grid">
-          <div class="form-group">
-            <label for="ach-body">Certifying body</label>
-            <input type="text" id="ach-body" placeholder="e.g. India Book of Records" required>
-          </div>
-          <div class="form-group">
-            <label for="ach-title">Title / feat</label>
-            <input type="text" id="ach-title" placeholder="Record title" required>
-          </div>
-          <div class="form-group">
-            <label for="ach-date">Date achieved</label>
-            <input type="text" id="ach-date" placeholder="e.g. 18 September 2023">
-          </div>
-          <div class="form-group">
-            <label for="ach-age">Age at the time</label>
-            <input type="text" id="ach-age" placeholder="e.g. 3 years 8 months">
-          </div>
-        </div>
-        <div class="form-group">
-          <label for="ach-description">Description</label>
-          <textarea id="ach-description" rows="3" placeholder="Brief description of the achievement"></textarea>
-        </div>
-        <button type="submit" class="btn btn-primary btn-sm">Add Achievement</button>
-      </form>
-    </section>
-
-    <section class="admin-section card" style="margin-top:24px;">
-      <h3>6. Manage Users</h3>
-      <p class="hint" style="margin-top:0;">
-        Create a new login for a family member/friend here, optionally granting
-        them admin rights immediately. To fully remove someone's login (not just
-        their admin rights), or see everyone who currently has a login, use the
-        Firebase Console → Authentication → Users — that part still isn't
-        possible from here.
-      </p>
-
-      <h4 style="margin-bottom:6px;">Add New User</h4>
-      <form id="add-user-form">
-        <div class="admin-grid">
-          <div class="form-group">
-            <label for="new-user-email">Email</label>
-            <input type="email" id="new-user-email" required>
-          </div>
-          <div class="form-group">
-            <label for="new-user-password">Temporary password (min. 8 characters)</label>
-            <input type="text" id="new-user-password" required minlength="8"
-                   placeholder="Make one up, e.g. a short phrase">
-          </div>
-        </div>
-        <div class="form-group" style="display:flex;align-items:center;gap:8px;">
-          <input type="checkbox" id="new-user-is-admin" style="width:auto;">
-          <label for="new-user-is-admin" style="margin:0;">Grant admin access immediately</label>
-        </div>
-        <button type="submit" class="btn btn-primary btn-sm">Create User</button>
-        <div id="add-user-msg" class="form-msg" style="display:none;"></div>
-      </form>
-
-      <hr style="margin:22px 0;border:none;border-top:1px solid var(--color-border);">
-
-      <h4 style="margin-bottom:6px;">Current Admins</h4>
-      <div id="admins-list"><p class="empty-state">Loading…</p></div>
-
-      <hr style="margin:22px 0;border:none;border-top:1px solid var(--color-border);">
-
-      <h4 style="margin-bottom:6px;">Promote an Existing User to Admin</h4>
-      <p class="hint" style="margin-top:0;">
-        For someone whose login already exists but isn't listed above — find their
-        User UID in Firebase Console → Authentication → Users, then paste it here.
-      </p>
-      <form id="promote-user-form">
-        <div class="admin-grid">
-          <div class="form-group">
-            <label for="promote-uid">User UID</label>
-            <input type="text" id="promote-uid" required placeholder="Paste UID from Authentication">
-          </div>
-          <div class="form-group">
-            <label for="promote-email">Their email (for your reference only)</label>
-            <input type="email" id="promote-email">
-          </div>
-        </div>
-        <button type="submit" class="btn btn-outline btn-sm">Grant Admin Access</button>
-        <div id="promote-msg" class="form-msg" style="display:none;"></div>
-      </form>
-    </section>
   </div>
 </div>
 
